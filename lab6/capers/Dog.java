@@ -41,7 +41,7 @@ public class Dog implements Serializable { // TODO
      */
     public static Dog fromFile(String name) {
         // TODO (hint: look at the Utils file)
-        File target=Utils.join(DOG_FOLDER+name+".txt");
+        File target=Utils.join(DOG_FOLDER,name+".txt");
         return Utils.readObject(target, Dog.class);
     }
 
@@ -59,7 +59,7 @@ public class Dog implements Serializable { // TODO
      */
     public void saveDog() {
         // TODO (hint: don't forget dog names are unique)
-        File output=Utils.join(DOG_FOLDER,name,".txt");
+        File output=Utils.join(DOG_FOLDER,name+".txt");
         Utils.writeObject(output,this);
     }
 
