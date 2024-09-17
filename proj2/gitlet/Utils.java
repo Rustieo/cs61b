@@ -70,7 +70,7 @@ class Utils {
      *  and throws IllegalArgumentException unless the directory designated by
      *  FILE also contains a directory named .gitlet. */
     static boolean restrictedDelete(File file) {
-        if (!(new File(file.getParentFile(), ".gitlet")).isDirectory()) {
+        if (!(new File(file.getParentFile(), ".gitlet") ).isDirectory()) {
             throw new IllegalArgumentException("not .gitlet working directory");
         }
         if (!file.isDirectory()) {
@@ -86,6 +86,39 @@ class Utils {
      *  directory designated by FILE also contains a directory named .gitlet. */
     static boolean restrictedDelete(String file) {
         return restrictedDelete(new File(file));
+    }
+
+    /**删除某一个文件夹下的所有内容
+     */
+    static boolean deleteDirContent(File file){
+        if(file.isDirectory()){
+            File[]files=file.listFiles();
+            if(files.length==0){
+                return true;
+            }
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    deleteDirContent(f);
+                }
+                f.delete();
+            }
+            return true;
+        }
+        return false;
+    }
+    /**删除某一个文件夹下的所有文件(不含子文件夹和子文件夹里的文件)
+     */
+    static boolean deleteDirFiles(File file){
+        if(file.isDirectory()){
+            File[] files=file.listFiles();
+            if(files.length==0)return true;
+            for(File f:files){
+                if(f.isDirectory())continue;
+                f.delete();
+            }
+            return true;
+        }
+        return false;
     }
 
     /* READING AND WRITING FILE CONTENTS */
@@ -115,7 +148,7 @@ class Utils {
      *  creating or overwriting it as needed.  Each object in CONTENTS may be
      *  either a String or a byte array.  Throws IllegalArgumentException
      *  in case of problems. */
-    static void writeContents(File file, Object... contents) {
+    static void writeContents(File file, Object... contents) {//如果实际文件不存在会自动帮你创建的
         try {
             if (file.isDirectory()) {
                 throw
@@ -171,6 +204,7 @@ class Utils {
     /** Returns a list of the names of all plain files in the directory DIR, in
      *  lexicographic order as Java Strings.  Returns null if DIR does
      *  not denote a directory. */
+    //该方法不会返回文件夹名
     static List<String> plainFilenamesIn(File dir) {
         String[] files = dir.list(PLAIN_FILES);
         if (files == null) {
@@ -187,18 +221,40 @@ class Utils {
     static List<String> plainFilenamesIn(String dir) {
         return plainFilenamesIn(new File(dir));
     }
+    /**
+     * 接收一个文件路径，返回该文件的文件名。
+     *
+     * @param filePath 文件路径
+     * @return 文件名
+     */
+    public static String getFileName(String filePath) {
+        // 检查路径是否为空
+        if (filePath == null || filePath.isEmpty()) {
+            return null;
+        }
 
+        // 查找最后一个路径分隔符的位置
+        int lastSeparatorIndex = filePath.lastIndexOf(File.separator);
+
+        // 如果没有找到路径分隔符，直接返回整个路径（可能是一个相对路径或文件名）
+        if (lastSeparatorIndex == -1) {
+            return filePath;
+        }
+
+        // 返回最后一个路径分隔符之后的部分，即文件名
+        return filePath.substring(lastSeparatorIndex + 1);
+    }//这个是GPT帮我写的
     /* OTHER FILE UTILITIES */
 
     /** Return the concatentation of FIRST and OTHERS into a File designator,
-     *  analogous to the {@link java.nio.file.Paths.#get(String, String[])}
+     *  analogous to the {@link java.nio.file.Paths#get(String, String[])}
      *  method. */
     static File join(String first, String... others) {
         return Paths.get(first, others).toFile();
     }
 
     /** Return the concatentation of FIRST and OTHERS into a File designator,
-     *  analogous to the {@link java.nio.file.Paths.#get(String, String[])}
+     *  analogous to the {@link java.nio.file.Paths#get(String, String[])}
      *  method. */
     static File join(File first, String... others) {
         return Paths.get(first.getPath(), others).toFile();

@@ -2,7 +2,9 @@ package gitlet;
 
 // TODO: any imports you need here
 
-import java.util.Date; // TODO: You'll likely use this in this class
+import java.io.File;
+import java.io.Serializable;
+import java.util.*;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -10,7 +12,7 @@ import java.util.Date; // TODO: You'll likely use this in this class
  *
  *  @author TODO
  */
-public class Commit {
+public class Commit implements Serializable {
     /**
      * TODO: add instance variables here.
      *
@@ -21,6 +23,91 @@ public class Commit {
 
     /** The message of this Commit. */
     private String message;
+    private String timeLabel;
+    public String parent;//父结点的类型不能是Commit,不然序列化时会重复储存
+    public String ID;
+    public List<String>parentSHAs;
+    public List<String> files;
+    Map<String,String>blobToFile;//文件名与相应的blob对象名,文件名为键,blob的名字为值
+    public Commit(boolean flag){//最开始的commit对象的初始化
+        this.timeLabel=new Date().toString();
+        this.message="initial commit";
+        this.parent=null;
+        this.parentSHAs=new ArrayList<>();
+        this.blobToFile=new HashMap<>();
+        this.ID=Utils.sha1(timeLabel,message);
+    }
+    public Commit(String parent,String message){
+        this.timeLabel=new Date().toString();
+        this.parent=parent;
+        this.message=message;
+        extendParent();//继承父结点的成员变量(这里要用深拷贝!!!)
+        scanStagedArea();
+        this.ID=Utils.sha1(blobToFile,timeLabel,message,parent);
+        save();
+    }
+
+    /**
+     * 将暂存区中的文件提交
+     */
+    private void scanStagedArea(){
+        scanAddArea();
+        scanRemoveArea();
+    }
+    private void scanRemoveArea(){//这里不涉及删除文件,删除文件的逻辑是在rm命令里的
+        List<String >rmFileNames=Utils.plainFilenamesIn(Repository.REMOVE_AREA);//文件名是要删除的fileName,文件内容是Path
+        for (int i = 0; i < rmFileNames.size(); i++) {
+            File readPath=Utils.join(Repository.REMOVE_AREA,rmFileNames.get(i));
+            String path=Utils.readObject(readPath,String.class);
+            files.remove(rmFileNames.get(i));
+            blobToFile.remove(path);
+        }
+    }
+    private void scanAddArea(){//如果只把前三位作为文件夹名,查找时会方便得多,后面可以再修改/////////////
+        List<String> blobSHAs=Utils.plainFilenamesIn(Repository.ADD_AREA);//这个是记录暂存区添加的文件的路径
+        for (int i = 0; i < blobSHAs.size(); i++) {
+            File target=Utils.join(Repository.ADD_AREA,blobSHAs.get(i));
+            Blob blob=Utils.readObject(target, Blob.class);
+            String filePath=blob.filePath;
+            String fileName=blob.fileName;
+            files.add(fileName);
+            blobToFile.put(filePath,blobSHAs.get(i));/*
+            将blob对象名与文件名的映射添加到commit中.这里不需要判断版本库中是否有历史记录,因为hashmap的映射
+            是唯一的,新加的值会覆盖*/
+            blob.save();//将blob保存
+        }
+        Utils.deleteDirFiles(Repository.ADD_AREA);
+    }
+    private void extendParent(){//利用父结点的SHA1获取父结点
+        File target=Utils.join(Repository.COMMITS,parent);
+        Commit parentCommit= Utils.readObject(target,Commit.class);
+        this.blobToFile=new HashMap<>();
+        blobToFile.putAll(parentCommit.blobToFile);
+        this.files=new ArrayList<>();
+        files.addAll(parentCommit.files);
+        this.parentSHAs=new ArrayList<>();
+        parentSHAs.addAll(parentCommit.parentSHAs);
+        parentSHAs.add(parent);
+    }
+    public boolean containsFile(String fileName){
+        return files.contains(fileName);
+    }
+    public boolean containsFilePath(String path){
+        return blobToFile.containsKey(path);
+    }
+
+    /*
+     输入文件路径,返回Blob对象
+     */
+    public Blob getBlob(String filePath){
+        String blobSHA=this.blobToFile.get(filePath);
+        File readBlob=Utils.join(Repository.BLOBS,blobSHA);
+        return Utils.readObject(readBlob, Blob.class);
+    }
+    private void save(){
+        File output=Utils.join(Repository.COMMITS,this.ID);
+        Utils.writeObject(output,this);
+    }
 
     /* TODO: fill in the rest of this class. */
 }
