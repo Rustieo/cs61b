@@ -6,11 +6,11 @@ import java.io.Serializable;
 public class Blob implements Serializable {
     final String fileName;
     final String filePath;
-    final String storeName;//Blob文件的名字
+    final String storeName;//Blob文件的名字,也是文件的SHA值
     final byte[]content;
     public Blob(File file){
-        this.storeName=Utils.sha1(file);
         this.content=Utils.readContents(file);
+        this.storeName=Utils.sha1(content);
         this.fileName=file.getName();
         this.filePath=file.getPath();
     }

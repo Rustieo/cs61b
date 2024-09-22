@@ -120,7 +120,8 @@ public class Repository {
             System.out.println("File does not exist.");
             return;
         }
-        String hash=Utils.sha1(file);
+        Blob blob=new Blob(file);///////////////////
+        String hash=blob.storeName;
         Commit commit=getCurCommit();//读取当前分支的最新Commit
         if(commit.blobToFile.containsKey(file.getPath())){
             if (commit.blobToFile.get(file.getPath()).equals(hash)){
@@ -131,7 +132,6 @@ public class Repository {
                 return;//代表文件与最新一次commit中的一样
             }
         }
-        Blob blob=new Blob(file);
         File stagedBlob=Utils.join(ADD_AREA,blob.storeName);/////////////
         Utils.writeObject(stagedBlob,blob);
     }
@@ -145,7 +145,7 @@ public class Repository {
     */
     public static void rm(String fileName){
         File file=stringToFile(fileName);
-        String hash=Utils.sha1(file);
+        String hash=Utils.sha1(readContents(file));/////////////
         String path=file.getPath();
         String name=file.getName();
         //检查是否在暂存区
