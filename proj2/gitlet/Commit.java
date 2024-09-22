@@ -24,11 +24,11 @@ public class Commit implements Serializable {
     /** The message of this Commit. */
     private String message;
     private String timeLabel;
-    public String parent;//父结点的类型不能是Commit,不然序列化时会重复储存
+    public String parent;//父结点的类型不能是Commit,不然序列化时会重复储存 
     public String ID;
     public List<String>parentSHAs;
     public List<String> files;
-    Map<String,String>blobToFile;//文件名与相应的blob对象名,文件名为键,blob的名字为值
+    Map<String,String>blobToFile;//文件路径与相应的blob对象名,文件路径为键,blob的名字为值
     public Commit(boolean flag){//最开始的commit对象的初始化
         this.timeLabel=new Date().toString();
         this.message="initial commit";

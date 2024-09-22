@@ -92,6 +92,7 @@ public class Repository {
         //To Do:
         return true;
     }
+
     public static Commit getCurCommit(){
         String branchName=Utils.readObject(HEAD, String.class);
         return getAnyCommit(branchName);
@@ -271,5 +272,43 @@ public class Repository {
             return;
         }
         readBranch.delete();
+    }
+    public static void merge(String branchName){
+        //错误情况记得写
+        Commit curCommit=getCurCommit();//curCommit即为HEAD
+        Commit mergeCommit=getAnyCommit(branchName);
+        Commit spiltCommit=findSpiltPoint(curCommit,mergeCommit);
+    }
+    private static void mergeBranch(Commit curCommit,Commit mergeCommit,Commit spiltCommit){
+        for(Map.Entry<String,String> entry:mergeCommit.blobToFile.entrySet()){
+            String filePath=entry.getKey();
+            if(!curCommit.blobToFile.containsKey(filePath)){//如果新分支有原分支没有追踪的文件
+                File notTrackedFile=Utils.join(filePath);
+                if(notTrackedFile.exists()){//如果这个文件存在,则报错
+                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                    return ;
+                }
+            }else {
+                if(!curCommit.blobToFile.get(filePath).equals(entry.getValue())){//如果该文件在两个commit中的版本不同
+
+                }
+            }
+            /*File readBlob=Utils.join(BLOBS,entry.getValue());
+            Blob blob=Utils.readObject(readBlob, Blob.class);
+            File output=Utils.join(entry.getKey());//这里是不是会存在"\"与"\\"的问题
+            Utils.writeObject(output,blob.content);*/
+        }
+    }
+    private static Commit findSpiltPoint(Commit curCommit,Commit mergeCommit){
+        List<String>headList=curCommit.parentSHAs;
+        List<String>mergeList=mergeCommit.parentSHAs;
+        /*遍历两个commit的列表,当第一次出现不一样的commit时即为spilt point*/
+        for (int i = 1; i < headList.size(); i++) {//循环从i=1开始
+            if(!headList.get(i).equals(mergeList.get(i))){
+                File out=Utils.join(COMMITS,headList.get(i-1));
+                return readObject(out, Commit.class);
+            }
+        }
+        return null;
     }
 }
