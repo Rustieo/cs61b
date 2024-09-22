@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.io.IOException;
 
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author TODO
@@ -15,7 +16,11 @@ public class Main {
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
-                Repository.init();
+                try {
+                    Repository.init();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 break;
             case "add":
                 Repository.add(args[1]);

@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class Repository {
     public static final File BLOBS=join(OBJECTS,"blobs");
     public static final File COMMITS=join(OBJECTS,"commits");
     public static final File BRANCHES=join(OBJECTS,"branches");
+
     public static final File HEAD=join(OBJECTS,"HEAD");
     //public static final File CURRENT_BRANCH=join(OBJECTS,"current_branch");
     public static final File REMOVE_AREA=Utils.join(STAGE_AREA,"Remove_Area");
@@ -57,7 +59,8 @@ public class Repository {
 
 
     /* TODO: fill in the rest of this class. */
-    public static void init(){//还需要判断仓库是否已存在
+
+    public static void init() throws IOException {//还需要判断仓库是否已存在
         if(GITLET_DIR.exists()&&GITLET_DIR.isDirectory()){
             System.out.println("A Gitlet version-control system already exists in the current directory.");
             return;
@@ -71,14 +74,14 @@ public class Repository {
         String head="master";
         Utils.writeObject(HEAD,head);
     }
-    public static void setPersistence(){
+    public static void setPersistence() throws IOException {
         GITLET_DIR.mkdir();
         STAGE_AREA.mkdir();
         OBJECTS.mkdir();
         BLOBS.mkdir();
         COMMITS.mkdir();
         BRANCHES.mkdir();
-        HEAD.mkdir();
+        HEAD.createNewFile();
         //CURRENT_BRANCH.mkdir();
         REMOVE_AREA.mkdir();
         ADD_AREA.mkdir();
