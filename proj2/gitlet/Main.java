@@ -28,6 +28,21 @@ public class Main {
                 break;
             case "commit":
                 Repository.commit(args[1]);
+                break;
+            case"checkout":
+                int length= args.length;
+                if(length==3){
+                    String fileName=args[2];
+                    Repository.checkout1(fileName);
+                } else if (length==4) {
+                    String commitName=args[1];
+                    String fileName=args[3];
+                    Repository.checkout2(commitName,fileName);
+                } else if (length==2) {
+                    String branchName=args[1];
+                    Repository.checkout3(branchName);
+                }
+                break;
         }
     }
 }
