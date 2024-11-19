@@ -56,7 +56,7 @@ public class Repository {
     //对文件操作时没有判断是文件还是文件夹
     //执行命令时没有检查git仓库是否存在
     //可能的bug:文件的"\\"与"\";
-
+    //同一文件add两次
 
     /* TODO: fill in the rest of this class. */
 
@@ -106,10 +106,13 @@ public class Repository {
         File readCommit=join(COMMITS,commitID);
         return readObject(readCommit, Commit.class);
     }//获取某一分支最新的Commit
-    public static String getCurrentBranch(){////////////这里是不是可以把curBranch设为全局变量好点
-        String head=Utils.readObject(HEAD,String.class);//获取当前分支
+    public static String getCurBranchCommitID(){
+        String head=Utils.readObject(HEAD,String.class);//获取当前分支的最新commitID
         File readBranch=Utils.join(BRANCHES,head);
         return Utils.readObject(readBranch,String.class);
+    }
+    public static String getCurrentBranch(){//返回当前分支的名字,配合join方法可以获取当前分支的文件路径
+        return Utils.readObject(HEAD, String.class);
     }
     /*1.文件先修改,add后再修改回上次commit的样子,再add
     2.文件add后要覆盖
@@ -136,8 +139,11 @@ public class Repository {
         Utils.writeObject(stagedBlob,blob);
     }
     public static void commit(String message){
-        String parCommitSHA=getCurrentBranch();//读取父结点的SHA
+        String parCommitSHA=getCurBranchCommitID();//读取父结点的SHA
         Commit commit=new Commit(parCommitSHA,message);
+        String curBranch=getCurrentBranch();
+        File output=Utils.join(BRANCHES,curBranch);
+        Utils.writeObject(output,commit.ID);
     }
     /*先检查文件是否被跟踪
     若暂存区有文件,则移出
@@ -193,7 +199,7 @@ public class Repository {
         }
         Commit commit=Utils.readObject(readCommit, Commit.class);
         //判断文件是否被该commit追踪
-        if(!commit.containsFile(file.getPath())){
+        if(!commit.containsFilePath(file.getPath())){
             System.out.println("File does not exist in that commit.");
             return;
         }

@@ -27,7 +27,7 @@ public class Commit implements Serializable {
     public String parent;//父结点的类型不能是Commit,不然序列化时会重复储存 
     public String ID;
     public List<String>parentSHAs;
-    public List<String> files;
+    //public List<String> files;
     Map<String,String>blobToFile;//文件路径与相应的blob对象名,文件路径为键,blob的名字为值
     public Commit(boolean flag){//最开始的commit对象的初始化
         this.timeLabel=new Date().toString();
@@ -36,6 +36,7 @@ public class Commit implements Serializable {
         this.parentSHAs=new ArrayList<>();
         this.blobToFile=new HashMap<>();
         this.ID=Utils.sha1(timeLabel,message);
+        save();
     }
     public Commit(String parent,String message){
         this.timeLabel=new Date().toString();
@@ -43,7 +44,7 @@ public class Commit implements Serializable {
         this.message=message;
         extendParent();//继承父结点的成员变量(这里要用深拷贝!!!)
         scanStagedArea();
-        this.ID=Utils.sha1(blobToFile,timeLabel,message,parent);
+        createID();
         save();
     }
 
@@ -59,7 +60,7 @@ public class Commit implements Serializable {
         for (int i = 0; i < rmFileNames.size(); i++) {
             File readPath=Utils.join(Repository.REMOVE_AREA,rmFileNames.get(i));
             String path=Utils.readObject(readPath,String.class);
-            files.remove(rmFileNames.get(i));
+            //files.remove(rmFileNames.get(i));
             blobToFile.remove(path);
         }
     }
@@ -70,7 +71,7 @@ public class Commit implements Serializable {
             Blob blob=Utils.readObject(target, Blob.class);
             String filePath=blob.filePath;
             String fileName=blob.fileName;
-            files.add(fileName);
+            //files.add(fileName);
             blobToFile.put(filePath,blobSHAs.get(i));/*
             将blob对象名与文件名的映射添加到commit中.这里不需要判断版本库中是否有历史记录,因为hashmap的映射
             是唯一的,新加的值会覆盖*/
@@ -83,15 +84,19 @@ public class Commit implements Serializable {
         Commit parentCommit= Utils.readObject(target,Commit.class);
         this.blobToFile=new HashMap<>();
         blobToFile.putAll(parentCommit.blobToFile);
-        this.files=new ArrayList<>();
-        files.addAll(parentCommit.files);
+        //this.files=new ArrayList<>();
+        //files.addAll(parentCommit.files);
         this.parentSHAs=new ArrayList<>();
         parentSHAs.addAll(parentCommit.parentSHAs);
         parentSHAs.add(parent);
     }
-    public boolean containsFile(String fileName){
-        return files.contains(fileName);
+    private void createID(){
+        byte[]blobs=Utils.serialize((Serializable) this.blobToFile);/////////不知道这里的强转会不会有bug
+        this.ID=Utils.sha1(blobs,timeLabel,message,parent);
     }
+    /*public boolean containsFile(String fileName){
+        return files.contains(fileName);
+    }*/
     public boolean containsFilePath(String path){
         return blobToFile.containsKey(path);
     }
