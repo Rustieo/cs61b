@@ -140,10 +140,10 @@ public class Repository {
     }
     public static void commit(String message){
         String parCommitSHA=getCurBranchCommitID();//读取父结点的SHA
-        Commit commit=new Commit(parCommitSHA,message);
-        String curBranch=getCurrentBranch();
-        File output=Utils.join(BRANCHES,curBranch);
-        Utils.writeObject(output,commit.ID);
+        Commit commit=new Commit(parCommitSHA,message);//创建commit对象
+        String curBranch=getCurrentBranch();//获取当前分支名字
+        File output=Utils.join(BRANCHES,curBranch);//获取当前分支路径
+        Utils.writeObject(output,commit.ID);//让当前分支指向这个commit,其他分支指针不移动
     }
     /*先检查文件是否被跟踪
     若暂存区有文件,则移出
@@ -243,6 +243,7 @@ public class Repository {
             File output=Utils.join(entry.getKey());//这里是不是会存在"\"与"\\"的问题
             Utils.writeObject(output,blob.content);
         }
+        
     }
     public static void setBranch(String branchName){
         Utils.writeObject(HEAD,branchName);
