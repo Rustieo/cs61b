@@ -32,7 +32,7 @@ public class Main {
                 Repository.add(args[1]);
                 break;
             case "commit":
-                if(args.length<2)System.out.println("Please enter a commit message.");
+                if(args.length<2||(args.length==2&&args[1]==null))System.out.println("Please enter a commit message.");
                 else {
                     checkNumber(args,2,2);
                     Repository.commit(args[1]);

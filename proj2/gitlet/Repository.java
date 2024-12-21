@@ -250,11 +250,11 @@ public class Repository {
         System.out.println();
         System.out.println("=== Removed Files ===");
         listRemovedFiles();
-        /*System.out.println();
-        System.out.println("=== Modifications Not Staged For Commit ===");
-
         System.out.println();
-        System.out.println("=== Modifications Not Staged For Commit ===");*/
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        System.out.println();
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        System.out.println();
     }
     private static void listBranch(){
         List<String> list=plainFilenamesIn(BRANCHES);///////////当前分支用不用第一个打印?
