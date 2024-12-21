@@ -4,6 +4,8 @@ package gitlet;
 
 import java.io.File;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /** Represents a gitlet commit object.
@@ -31,7 +33,7 @@ public class Commit implements Serializable {
     //public List<String> files;
     Map<String,String>blobToFile;//文件路径与相应的blob对象名,文件路径为键,blob的名字为值
     public Commit(boolean flag){//最开始的commit对象的初始化
-        this.timeLabel=new Date().toString();
+        this.timeLabel=dateToTimeStamp(new Date(0));
         this.message="initial commit";
         //this.parentSHAs=new ArrayList<>();
         this.blobToFile=new TreeMap<>();
@@ -40,7 +42,7 @@ public class Commit implements Serializable {
         save();
     }
     public Commit(String message,String ...parent){
-        this.timeLabel=new Date().toString();
+        this.timeLabel=dateToTimeStamp(new Date());
         this.parents=new ArrayList<>();
         if(parent.length==1)this.parents.add(parent[0]);
         else {
@@ -53,6 +55,10 @@ public class Commit implements Serializable {
         scanRemoveArea();
         createID();
         save();
+    }
+    private static String dateToTimeStamp(Date date) {
+        DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
+        return dateFormat.format(date);
     }
     private void scanRemoveArea(){//这里不涉及删除文件,删除文件的逻辑是在rm命令里的
         List<String >rmFileNames=Utils.plainFilenamesIn(Repository.REMOVE_AREA);//文件名是要删除的fileName,文件内容是Path
