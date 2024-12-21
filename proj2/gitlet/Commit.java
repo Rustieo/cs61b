@@ -42,8 +42,11 @@ public class Commit implements Serializable {
     public Commit(String message,String ...parent){
         this.timeLabel=new Date().toString();
         this.parents=new ArrayList<>();
-        this.parents.add(parent[0]);
-        this.parents.add(parent[1]);
+        if(parent.length==1)this.parents.add(parent[0]);
+        else {
+            this.parents.add(parent[0]);
+            this.parents.add(parent[1]);
+        }
         this.message=message;
         extendParent();//继承父结点的成员变量(这里要用深拷贝!!!)
         scanAddArea();
