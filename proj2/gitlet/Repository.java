@@ -157,44 +157,31 @@ public class Repository {
         File output=Utils.join(BRANCHES,curBranch);//获取当前分支路径
         Utils.writeObject(output,commit.ID);//让当前分支指向这个commit,其他分支指针不移动
     }
-    /*先检查文件是否被跟踪
-    若暂存区有文件,则移出
-      再把文件名储存下来,之后删除文件
+    /*如果文件被暂存,则单纯移出暂存区,不做其他改动.如果没有被暂存,检查是够被跟踪,如果跟踪则删除工作区中的文件并取消跟踪.
+       如果既没有被暂存,也没有被跟踪,则不做其他改动
     */
-    public static void rm(String fileName){
-        File file=nameToFile(fileName);
-        String hash=Utils.sha1(readContents(file));/////////////
-        String path=file.getPath();
-        String name=file.getName();
+    public static void rm(String fileName) {
+        File file = nameToFile(fileName);
+        String hash = Utils.sha1(readContents(file));/////////////
+        String path = file.getPath();
+        String name = file.getName();
+        Commit currentCommit = getCurCommit();
         //检查是否在暂存区\
-        HashMap<String,String>fileMap=Utils.readObject(STAGE,HashMap.class);
-        //检查是否被跟踪
-        Commit currentCommit=getCurCommit();
-        if(!currentCommit.containsFilePath(path)){
-            //如果未被跟踪,检查暂存区是否有文件
-            if(fileMap.containsKey(fileName)){
-                String add_StageHash=fileMap.get(fileName);
-                File addFile=Utils.join(ADD_AREA,add_StageHash);
-                addFile.delete();
-                fileMap.remove(fileName);
-            }
-            System.out.println("No reason to remove the file.");
-            return;
-        }
-        //如果被跟踪,检查暂存区的文件
-        if(fileMap.containsKey(fileName)){
-            String add_StageHash=fileMap.get(fileName);
-            File addFile=Utils.join(ADD_AREA,add_StageHash);
+        HashMap<String, String> fileMap = Utils.readObject(STAGE, HashMap.class);
+        if (fileMap.containsKey(fileName)) {
+            String add_StageHash = fileMap.get(fileName);
+            File addFile = Utils.join(ADD_AREA, add_StageHash);
             addFile.delete();
             fileMap.remove(fileName);
+            Utils.writeObject(STAGE, fileMap);//持久化暂存表
+        } else if (currentCommit.containsFilePath(path)) {
+            file.delete();
+            File output = Utils.join(REMOVE_AREA, name);//这里储存的文件的名字是要删除的file的name,但文件内容是filePath
+            Utils.writeObject(output, path);
+        }else {
+            System.out.println("No reason to remove the file.");
         }
-        File output=Utils.join(REMOVE_AREA,name);//这里储存的文件的名字是要删除的file的name,但文件内容是filePath
-        Utils.writeObject(output,path);
-        //删除文件
-        file.delete();
-        Utils.writeObject(STAGE,fileMap);//持久化暂存表
     }
-
     public static void log(){
         Commit commit=getCurCommit();
         while(!commit.parents.isEmpty()){
