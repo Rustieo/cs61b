@@ -13,9 +13,14 @@ public class Main {
      */
     public static void main(String[] args) {
         // TODO: what if args is empty?
+        if(args.length==0) {
+            System.out.println("Please enter a command.");
+            return;
+        }
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
+                checkNumber(args,1,1);
                 try {
                     Repository.init();
                 } catch (IOException e) {
@@ -23,13 +28,22 @@ public class Main {
                 }
                 break;
             case "add":
+                checkNumber(args,2,2);
                 Repository.add(args[1]);
-                // TODO: handle the `add [filename]` command
                 break;
             case "commit":
-                Repository.commit(args[1]);
+                if(args.length<2)System.out.println("Please enter a commit message.");
+                else {
+                    checkNumber(args,2,2);
+                    Repository.commit(args[1]);
+                }
+                break;
+            case "branch":
+                checkNumber(args,2,2);
+                Repository.branch(args[1]);
                 break;
             case"checkout":
+                checkNumber(args,2,4);
                 int length= args.length;
                 if(length==3){
                     String fileName=args[2];
@@ -43,6 +57,43 @@ public class Main {
                     Repository.checkout3(branchName);
                 }
                 break;
+            case "rm":
+                checkNumber(args,2,2);
+                Repository.rm(args[1]);
+                break;
+            case "reset":
+                checkNumber(args,2,2);
+                Repository.reset(args[1]);
+                break;
+            case "log":
+                checkNumber(args,1,1);
+                Repository.log();
+                break;
+            case "global-log":
+                checkNumber(args,1,1);
+                Repository.globalLog();
+                break;
+            case "find":
+                checkNumber(args,2,2);
+                Repository.find(args[1]);
+                break;
+            case "status":
+                checkNumber(args,1,1);
+                Repository.status();
+                break;
+            case "merge":
+                checkNumber(args,2,2);
+                Repository.merge(args[1]);
+                break;
+            default:
+                System.out.println("No command with that name exists.");
+                System.exit(0);
+        }
+    }
+    static void checkNumber(String[]args,int lo,int hi){
+        if(!(args.length>=lo&&args.length<=hi)){
+            System.out.println("Incorrect operands.");
+            System.exit(0);
         }
     }
 }

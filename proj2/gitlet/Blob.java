@@ -10,8 +10,8 @@ public class Blob implements Serializable {
     final byte[]content;
     public Blob(File file){
         this.content=Utils.readContents(file);
-        this.storeName=Utils.sha1(content);
         this.fileName=file.getName();
+        this.storeName=Utils.sha1(fileName,content);//不能只用content,不然会出现两个名字不同的空文件sha1一样
         this.filePath=file.getPath();
     }
     public void save(){

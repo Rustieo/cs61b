@@ -28,6 +28,7 @@ import java.util.List;
  */
 class Utils {
 
+
     /** The length of a complete SHA-1 UID as a hexadecimal numeral. */
     static final int UID_LENGTH = 40;
 
@@ -148,6 +149,7 @@ class Utils {
      *  creating or overwriting it as needed.  Each object in CONTENTS may be
      *  either a String or a byte array.  Throws IllegalArgumentException
      *  in case of problems. */
+    //content必须是string或者byte数组
     static void writeContents(File file, Object... contents) {//如果实际文件不存在会自动帮你创建的
         try {
             if (file.isDirectory()) {
@@ -187,7 +189,7 @@ class Utils {
 
     /** Write OBJ to FILE. */
     static void writeObject(File file, Serializable obj) {
-        writeContents(file, serialize(obj));
+        writeContents(file, serialize(obj));//气死我了,把这个序列化方法看成类型转换导致debug好久
     }
 
     /* DIRECTORIES */
@@ -204,7 +206,7 @@ class Utils {
     /** Returns a list of the names of all plain files in the directory DIR, in
      *  lexicographic order as Java Strings.  Returns null if DIR does
      *  not denote a directory. */
-    //该方法不会返回文件夹名
+    //该方法返回给定文件夹下的所有普通文件(即不是文件夹的文件)
     static List<String> plainFilenamesIn(File dir) {
         String[] files = dir.list(PLAIN_FILES);
         if (files == null) {
@@ -223,9 +225,6 @@ class Utils {
     }
     /**
      * 接收一个文件路径，返回该文件的文件名。
-     *
-     * @param filePath 文件路径
-     * @return 文件名
      */
     public static String getFileName(String filePath) {
         // 检查路径是否为空
@@ -244,6 +243,16 @@ class Utils {
         // 返回最后一个路径分隔符之后的部分，即文件名
         return filePath.substring(lastSeparatorIndex + 1);
     }//这个是GPT帮我写的
+
+
+    public static String getFilePath(String fileName){//////////////////////
+        return join(Repository.CWD,fileName).getPath();
+    }//给定文件名称,返回文件路径
+
+
+    public static File nameToFile(String name){
+        return Utils.join(Repository.CWD,name);
+    }//给定文件名称,返回文件对象
     /* OTHER FILE UTILITIES */
 
     /** Return the concatentation of FIRST and OTHERS into a File designator,
