@@ -24,7 +24,7 @@ public class Commit implements Serializable {
     /** The message of this Commit. */
     public String message;
     public String timeLabel;
-    public List<String> parents;/*父结点的类型不能是Commit,不然序列化时会重复储存;
+    public ArrayList<String> parents;/*父结点的类型不能是Commit,不然序列化时会重复储存;
     parents[0]是first parent,即执行merge命令时当前所在的分支*/
     public String ID;
     //public List<String>parentSHAs;
@@ -95,7 +95,8 @@ public class Commit implements Serializable {
 
     private void createID(){
         byte[]blobs=Utils.serialize((Serializable) this.blobToFile);/////////不知道这里的强转会不会有bug
-        this.ID=Utils.sha1(blobs,timeLabel,message,parents);
+        byte[]parentsByte=Utils.serialize(parents);
+        this.ID=Utils.sha1(blobs,timeLabel,message,parentsByte);
     }
     /*public boolean containsFile(String fileName){
         return files.contains(fileName);
