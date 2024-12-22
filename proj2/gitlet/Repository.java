@@ -126,8 +126,10 @@ public class Repository {
             System.out.println("File does not exist.");
             return;
         }
+        File checkIfRemoved=Utils.join(REMOVE_AREA,fileName);
+        if(checkIfRemoved.exists())checkIfRemoved.delete();//如果该文件在删除区,则移出
         HashMap<String,String> fileMap=Utils.readObject(STAGE,HashMap.class);
-        Blob blob=new Blob(file);///////////////////
+        Blob blob=new Blob(file);
         String hash=blob.storeName;
         Commit commit=getCurCommit();//读取当前分支的最新Commit
         if(commit.blobToFile.getOrDefault(file.getPath(),"null").equals(hash)){
@@ -136,8 +138,7 @@ public class Repository {
             //假如文件当前版本与最新commit中的版本相同,此次add无效.并且如果暂存区中已经有该文件了,则把该文件移出暂存区
             return;
         }
-        File checkIfRemoved=Utils.join(REMOVE_AREA,fileName);
-        if(checkIfRemoved.exists())checkIfRemoved.delete();//如果该文件在删除区,则移出
+
         File stagedBlob=Utils.join(ADD_AREA,blob.storeName);/////////////
         Utils.writeObject(stagedBlob,blob);
         ///////////////
@@ -329,6 +330,7 @@ public class Repository {
         //判断该commit是否存在
         if(!readCommit.exists()){
             System.out.println("No commit with that id exists.");
+            return;
         }
         Commit commit=Utils.readObject(readCommit, Commit.class);
         //判断文件是否被该commit追踪

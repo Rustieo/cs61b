@@ -58,6 +58,9 @@ public class Main {
                 checkNumber(args,2,2);
                 Repository.rm(args[1]);
                 break;
+            case "rm-branch":
+                checkNumber(args,2,2);
+                Repository.rmBranch(args[1]);
             case "reset":
                 checkNumber(args,2,2);
                 Repository.reset(args[1]);
