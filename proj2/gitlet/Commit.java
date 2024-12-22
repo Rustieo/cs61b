@@ -67,6 +67,7 @@ public class Commit implements Serializable {
             String path=Utils.readObject(readPath,String.class);
             blobToFile.remove(path);
         }
+        Utils.deleteDirFiles(Repository.REMOVE_AREA);
     }
     private void scanAddArea(){//如果只把前三位作为文件夹名,查找时会方便得多,后面可以再修改/////////////
         /*List<String> blobSHAs=Utils.plainFilenamesIn(Repository.ADD_AREA);//这个是记录暂存区添加的文件的路径
