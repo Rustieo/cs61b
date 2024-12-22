@@ -166,7 +166,8 @@ public class Repository {
     */
     public static void rm(String fileName) {
         File file = nameToFile(fileName);
-
+        String path = file.getPath();
+        String name = file.getName();
         Commit currentCommit = getCurCommit();
         //检查是否在暂存区\
         HashMap<String, String> fileMap = Utils.readObject(STAGE, HashMap.class);
@@ -176,16 +177,10 @@ public class Repository {
             addFile.delete();
             fileMap.remove(fileName);
             Utils.writeObject(STAGE, fileMap);//持久化暂存表
-        } else if (file.exists()) {
-            String path = file.getPath();
-            String name = file.getName();
-            if(currentCommit.containsFilePath(path)){
-                file.delete();
-                File output = Utils.join(REMOVE_AREA, name);//这里储存的文件的名字是要删除的file的name,但文件内容是filePath
-                Utils.writeObject(output, path);
-            }/*else {
-                System.out.println("No reason to remove the file.");
-            }*/
+        } else if (currentCommit.containsFilePath(path)) {
+            if(file.exists()) file.delete();
+            File output = Utils.join(REMOVE_AREA, name);//这里储存的文件的名字是要删除的file的name,但文件内容是filePath
+            Utils.writeObject(output, path);
         }  else {
             System.out.println("No reason to remove the file.");
         }
