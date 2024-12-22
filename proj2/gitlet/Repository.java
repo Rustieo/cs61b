@@ -235,18 +235,14 @@ public class Repository {
     public static void status(){
         System.out.println("=== Branches ===");
         listBranch();
-        System.out.println("=== Staged Files ===");
+        System.out.println("\n=== Staged Files ===");
         listStagedFiles();//这个用不用打印在暂存区但是" Modifications Not Staged For Commit"的文件
-        System.out.println();
-        System.out.println("=== Removed Files ===");
+        System.out.println("\n=== Removed Files ===");
         listRemovedFiles();
-        System.out.println();
-        System.out.println("=== Modifications Not Staged For Commit ===");
+        System.out.println("\n=== Modifications Not Staged For Commit ===");
         listModified();
-        System.out.println();
-        System.out.println("=== Untracked Files ===");
+        System.out.println("\n=== Untracked Files ===");
         //listUntracked();
-        System.out.println();
     }
     private static void listBranch(){
         List<String> list=plainFilenamesIn(BRANCHES);///////////当前分支用不用第一个打印?
