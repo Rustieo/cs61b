@@ -145,6 +145,10 @@ public class Repository {
         Utils.writeObject(STAGE,fileMap);
     }
     public static void commit(String message){
+        if(message.isEmpty()) {
+            System.out.println("Please enter a commit message.");
+            System.exit(0);
+        }
         int addLen=ADD_AREA.listFiles().length;
         int rmLen=REMOVE_AREA.listFiles().length;
         if(addLen==0&&rmLen==0){
@@ -239,8 +243,10 @@ public class Repository {
         listRemovedFiles();
         System.out.println();
         System.out.println("=== Modifications Not Staged For Commit ===");
+        listModified();
         System.out.println();
         System.out.println("=== Untracked Files ===");
+        listUntracked();
         System.out.println();
     }
     private static void listBranch(){
@@ -264,7 +270,47 @@ public class Repository {
         }
     }
     private static void listModified(){
-        //TO DO:
+        HashMap<String,String>fileMap=readObject(STAGE,HashMap.class);
+        for (HashMap.Entry <String,String>entry:fileMap.entrySet()){
+            String fileName=entry.getKey();
+            File file=new File(getFilePath(fileName));
+            if(!file.exists()){//如果文件在暂存区中但在工作区中被删除
+                System.out.println(fileName);
+                continue;
+            }
+            byte[]content=readContents(file);
+            String shaInCWD=sha1(fileName,content);
+            if(!shaInCWD.equals(entry.getValue())){//如果文件在暂存区中,但和工作区中的版本不同
+                System.out.println(fileName);
+                continue;
+            }
+        }
+        Commit commit=getCurCommit();
+        for (Map.Entry<String,String>entry:commit.blobToFile.entrySet()){
+            String fileName=getFileName(entry.getKey());
+            if(fileMap.containsKey(fileName))continue;//在暂存区的情况上面已经考虑过了
+            File file=new File(entry.getKey());
+            if(!file.exists()){
+                List<String>rmList=plainFilenamesIn(REMOVE_AREA);
+                if(!rmList.contains(fileName)) System.out.println(fileName);//如果文件不存在且不在删除区域中
+                continue;
+            }
+            byte[]content=readContents(file);
+            String shaInCWD=sha1(fileName,content);
+            if(!shaInCWD.equals(entry.getValue())){//如果文件不在暂存中,且在工作区中的版本和最新commit中的不同
+                System.out.println(fileName);
+            }
+        }
+    }
+    private static void listUntracked(){
+        List<String>fileList=plainFilenamesIn(CWD);
+        HashMap<String,String>fileMap=readObject(STAGE,HashMap.class);
+        Commit commit=getCurCommit();
+        for (String fileName:fileList){//既不在暂存区,也没有被追踪
+            if(!fileMap.containsKey(fileName)&&commit.blobToFile.containsKey(getFilePath(fileName))){
+                System.out.println(fileName);
+            }
+        }
     }
 
     /*获取文件在头提交中的版本，并将其放入工作目录，如果文件已经存在，则覆盖其版本。文件的新版本不会被暂存。*/
