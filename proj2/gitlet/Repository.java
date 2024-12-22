@@ -246,7 +246,7 @@ public class Repository {
         listModified();
         System.out.println();
         System.out.println("=== Untracked Files ===");
-        listUntracked();
+        //listUntracked();
         System.out.println();
     }
     private static void listBranch(){
@@ -302,7 +302,7 @@ public class Repository {
             }
         }
     }
-    private static void listUntracked(){
+    /*private static void listUntracked(){
         List<String>fileList=plainFilenamesIn(CWD);
         HashMap<String,String>fileMap=readObject(STAGE,HashMap.class);
         Commit commit=getCurCommit();
@@ -311,7 +311,7 @@ public class Repository {
                 System.out.println(fileName);
             }
         }
-    }
+    }*/
 
     /*获取文件在头提交中的版本，并将其放入工作目录，如果文件已经存在，则覆盖其版本。文件的新版本不会被暂存。*/
     public static void checkout1(String fileName){
