@@ -307,7 +307,7 @@ public class Repository {
         HashMap<String,String>fileMap=readObject(STAGE,HashMap.class);
         Commit commit=getCurCommit();
         for (String fileName:fileList){//既不在暂存区,也没有被追踪
-            if(!fileMap.containsKey(fileName)&&commit.blobToFile.containsKey(getFilePath(fileName))){
+            if(!fileMap.containsKey(fileName)&&!commit.blobToFile.containsKey(getFilePath(fileName))){
                 System.out.println(fileName);
             }
         }
