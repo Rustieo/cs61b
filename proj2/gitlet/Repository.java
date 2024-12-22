@@ -183,11 +183,11 @@ public class Repository {
                 file.delete();
                 File output = Utils.join(REMOVE_AREA, name);//这里储存的文件的名字是要删除的file的name,但文件内容是filePath
                 Utils.writeObject(output, path);
-            }else {
+            }/*else {
                 System.out.println("No reason to remove the file.");
-            }
+            }*/
         }  else {
-            System.out.println("File does not exist.");
+            System.out.println("No reason to remove the file.");
         }
     }
     public static void log(){
