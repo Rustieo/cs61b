@@ -617,7 +617,7 @@ public class Repository {
             String fileName=getFileName(filePath);
             String newBlob=entry.getValue();
             String sptBlob=spiltCommit.blobToFile.getOrDefault(filePath,"null");
-            if(!curCommit.blobToFile.containsKey(filePath)){//包含的情况上面的循环已经讨论过了
+            if(!curCommit.blobToFile.containsKey(filePath)){ //包含的情况上面的循环已经讨论过了
                 if(sptBlob.equals("null")){//祖先和当前分支都不存在该文件,那就用合并分支的
                     mergeCheckout(newCommit,filePath);
                     add(fileName);
@@ -652,15 +652,15 @@ public class Repository {
             newStr=new String(newBlob.content, StandardCharsets.UTF_8);
         }
         File file=new File(filePath);
-        String output="<<<<<<< HEAD\n" + curStr + "=======\n" + newStr + ">>>>>>>\n";
-        writeContents(file,output.getBytes(StandardCharsets.UTF_8));//////
-        add(Utils.getFileName(filePath));//////////////
+        String output=  "<<<<<<< HEAD\n" + curStr + "=======\n" + newStr + ">>>>>>>\n";
+        writeContents(file, output.getBytes(StandardCharsets.UTF_8)); //////
+        add(Utils.getFileName(filePath)); //////////////
         System.out.println("Encountered a merge conflict.");
     }
-    private static void mergeCommit(String message,String par1,String par2){
-        Commit commit=new Commit(message,par1,par2);//创建commit对象,par1是curCom,par2是newCom
-        String curBranch=getCurrentBranch();//获取当前分支名字
-        File output=Utils.join(BRANCHES,curBranch);//获取当前分支路径
-        Utils.writeObject(output,commit.ID);//让当前分支指向这个commit,其他分支指针不移动
+    private static void mergeCommit(String message,String par1, String par2){
+        Commit commit=  new Commit(message, par1, par2); //创建commit对象,par1是curCom,par2是newCom
+        String curBranch=  getCurrentBranch(); //获取当前分支名字
+        File output=  Utils.join(BRANCHES, curBranch); //获取当前分支路径
+        Utils.writeObject(output, commit.ID); //让当前分支指向这个commit,其他分支指针不移动
     }
 }
