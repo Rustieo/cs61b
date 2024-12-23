@@ -480,7 +480,7 @@ public class Repository {
         }
         mergeFiles(curCommit,newCommit,spiltCommit);
         String HEAD=getCurrentBranch();
-        String mergeMessage="Merged Commit,"+branchName+" "+"merged into "+HEAD;
+        String mergeMessage="Merged "+branchName+" "+"into "+HEAD;
         mergeCommit(mergeMessage,curCommit.ID, newCommit.ID);
     }
     private static Commit findSpiltPoint(Commit curCommit,Commit newCommit){
