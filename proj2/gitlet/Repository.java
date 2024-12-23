@@ -67,10 +67,7 @@ public class Repository {
     /* TODO: fill in the rest of this class. */
 
     public static void init() throws IOException {//还需要判断仓库是否已存在
-        if(checkGit()){
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
-            return;
-        }
+        checkGit();
         setPersistence();
         Commit initialCommit=new Commit(true);
         String initialBranch=initialCommit.ID;
