@@ -43,9 +43,17 @@ public class Main {
                 checkNumber(args,2,4);
                 int length= args.length;
                 if(length==3){
+                    if (!args[1].equals("--")) {
+                        System.out.println("Incorrect operands.");
+                        System.exit(0);
+                    }
                     String fileName=args[2];
                     Repository.checkout1(fileName);
                 } else if (length==4) {
+                    if (!args[2].equals("--")) {
+                        System.out.println("Incorrect operands.");
+                        System.exit(0);
+                    }
                     String commitName=args[1];
                     String fileName=args[3];
                     Repository.checkout2(commitName,fileName);

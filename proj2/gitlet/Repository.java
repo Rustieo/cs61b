@@ -107,6 +107,10 @@ public class Repository {
     }//获取当前分支的最新Commit
     public static Commit getAnyCommit(String branchName){
         File readBranch=join(BRANCHES,branchName);
+        if(!readBranch.exists()){
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        }
         String commitID=Utils.readObject(readBranch, String.class);
         File readCommit=join(COMMITS,commitID);
         return readObject(readCommit, Commit.class);
@@ -252,7 +256,7 @@ public class Repository {
         System.out.println("\n=== Modifications Not Staged For Commit ===");
         listModified();
         System.out.println("\n=== Untracked Files ===");
-        //listUntracked();
+        listUntracked();
     }
     private static void listBranch(){
         List<String> list=plainFilenamesIn(BRANCHES);///////////当前分支用不用第一个打印?
@@ -336,9 +340,17 @@ public class Repository {
     public static void checkout2(String commitID,String fileName){
         checkGit();
         File file=nameToFile(fileName);//获取当前文件的文件对象(工作目录中)
-        File readCommit=Utils.join(COMMITS,commitID);
+        File readCommit=null;
+        if(commitID.length()<40){//commit的前八位查询
+            List<String>commits=plainFilenamesIn(COMMITS);
+            for (String s:commits){
+                if(s.startsWith(commitID)){
+                    readCommit=Utils.join(COMMITS,s);
+                }
+            }
+        }else readCommit=Utils.join(COMMITS,commitID);
         //判断该commit是否存在
-        if(!readCommit.exists()){
+        if(readCommit==null||!readCommit.exists()){
             System.out.println("No commit with that id exists.");
             return;
         }
@@ -490,9 +502,7 @@ public class Repository {
         checkUntrackedFiles(curCommit,newCommit);
         Commit spiltCommit=findSpiltPoint(curCommit,newCommit);
         if(spiltCommit.ID.equals(curCommit.ID)){//如果分支点是curCom,可以快速合并
-            String curBranch=getCurrentBranch();//获取当前分支名字
-            File output=Utils.join(BRANCHES,curBranch);//获取当前分支路径
-            Utils.writeObject(output,newCommit.ID);//让当前分支指向这个commit,其他分支指针不移动
+            reset(newCommit.ID);
             System.out.println("Current branch fast-forwarded.");
             return;
         }
@@ -635,7 +645,7 @@ public class Repository {
             curStr=new String(curBlob.content, StandardCharsets.UTF_8);
         }
         if(newFile.equals("null")){
-            newStr="empty file";
+            newStr="";
         }else {
             File newTar=Utils.join(BLOBS,newFile);
             Blob newBlob=Utils.readObject(newTar, Blob.class);
