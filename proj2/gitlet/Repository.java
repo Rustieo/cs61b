@@ -7,10 +7,10 @@ import java.util.*;
 
 import static gitlet.Utils.*;
 
-// TODO: any imports you need here
+
 
 /** Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
+ *
  *  does at a high level.
  *
  *  @author TODO
@@ -18,14 +18,14 @@ import static gitlet.Utils.*;
 public class Repository {
     public static void main(String[] args) {
         //File tar=Utils.join("D:\\gitletTest","man.txt");
-        File tar=new File("D:\\ha");
-        List<String>list=plainFilenamesIn(tar);
+        File tar=  new File("D:\\ha");
+        List<String> list  =plainFilenamesIn(tar);
         for (String s:list){
             System.out.println(s);
         }
     }
     /**
-     * TODO: add instance variables here.
+     *
      *
      * List all instance variables of the Repository class here with a useful
      * comment above them describing what that variable represents and how that
@@ -48,14 +48,14 @@ public class Repository {
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
-    public static final File STAGE_AREA=join(GITLET_DIR,"StageArea");
-    public static final File OBJECTS=join(GITLET_DIR,".objects");
-    public static final File BLOBS=join(OBJECTS,"blobs");
-    public static final File COMMITS=join(OBJECTS,"commits");
-    public static final File BRANCHES=join(OBJECTS,"branches");
-    public static final File HEAD=join(OBJECTS,"HEAD");
-    public static final File REMOVE_AREA=Utils.join(STAGE_AREA,"Remove_Area");
-    public static final File ADD_AREA=Utils.join(STAGE_AREA,"Add_Area");
+    public static final File STAGE_AREA=  join(GITLET_DIR,"StageArea");
+    public static final File OBJECTS=  join(GITLET_DIR,".objects");
+    public static final File BLOBS=  join(OBJECTS,"blobs");
+    public static final File COMMITS=  join(OBJECTS,"commits");
+    public static final File BRANCHES= join(OBJECTS ,"branches");
+    public static final File HEAD= join(OBJECTS,"HEAD");
+    public static final File REMOVE_AREA= Utils.join(STAGE_AREA,"Remove_Area");
+    public static final File ADD_AREA= Utils.join(STAGE_AREA,"Add_Area");
     public static final File STAGE=Utils.join(STAGE_AREA,"STAGE_MAP");
     //有一个改进方案:可以为每一个分支单独创建一个指向最新commit的指针,这样子就不用每次add的时候读取Branch了
     //还有一个:只取SHA1的前五位
@@ -284,13 +284,13 @@ public class Repository {
             String fileName=entry.getKey();
             File file=new File(getFilePath(fileName));
             if(!file.exists()){//如果文件在暂存区中但在工作区中被删除
-                System.out.println(fileName);
+                System.out.println(fileName+" (deleted)");
                 continue;
             }
             byte[]content=readContents(file);
             String shaInCWD=sha1(fileName,content);
             if(!shaInCWD.equals(entry.getValue())){//如果文件在暂存区中,但和工作区中的版本不同
-                System.out.println(fileName);
+                System.out.println(fileName+" (modified)");
             }
         }
         Commit commit=getCurCommit();
@@ -300,13 +300,13 @@ public class Repository {
             File file=new File(entry.getKey());
             if(!file.exists()){
                 List<String>rmList=plainFilenamesIn(REMOVE_AREA);
-                if(!rmList.contains(fileName)) System.out.println(fileName);//如果文件不存在且不在删除区域中
+                if(!rmList.contains(fileName)) System.out.println(fileName+" (deleted)");//如果文件不存在且不在删除区域中
                 continue;
             }
             byte[]content=readContents(file);
             String shaInCWD=sha1(fileName,content);
             if(!shaInCWD.equals(entry.getValue())){//如果文件不在暂存中,且在工作区中的版本和最新commit中的不同
-                System.out.println(fileName);
+                System.out.println(fileName+" (modified)");
             }
         }
     }
@@ -631,7 +631,7 @@ public class Repository {
     }
     private static void mergeCheckout(Commit commit,String filePath){
         File file=new File(filePath);
-        Blob blob=commit.getBlob(filePath);
+        Blob blob= commit.getBlob(filePath);
         Utils.writeContents(file,blob.content);
     }//为merge定制的,用于将某个提交中的文件写入工作区
     private static void dealConflict(String filePath,String curFile,String newFile){
