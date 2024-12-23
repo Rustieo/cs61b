@@ -90,13 +90,16 @@ public class Repository {
         //CURRENT_BRANCH.mkdir();
         REMOVE_AREA.mkdir();
         ADD_AREA.mkdir();
-        HashMap<String,String>nameToBlob=new HashMap<>();//////////
-        Utils.writeObject(STAGE,nameToBlob);
+        HashMap<String,String>fileMap=new HashMap<>();//////////
+        Utils.writeObject(STAGE,fileMap);
     }
 
-    public static boolean checkGit(){
-        /*不知道为什么大家的代码都是检查cwd下是否有.gitlet,而不考虑子文件夹的情况?可能项目简化了?*/
-        return GITLET_DIR.isDirectory()&&GITLET_DIR.exists();
+    public static void checkGit(){
+        /*不知道为什么大家的代码都是检查cwd下是否有.gitlet,而不考虑子文件夹的情况?可能项目简化了?(后面看了,确实不考虑子文件夹)*/
+        if(!(GITLET_DIR.isDirectory()&&GITLET_DIR.exists())){
+            System.out.println("Not in an initialized Gitlet directory.");
+            System.exit(0);
+        }
     }
 
     public static Commit getCurCommit(){
@@ -121,6 +124,7 @@ public class Repository {
     2.文件add后要覆盖
      */
     public static void add(String fileName){//还要先判断是否是文件,还要判断是否与版本库中的重合
+        checkGit();
         File file=nameToFile(fileName);
         if(!file.isFile()){
             System.out.println("File does not exist.");
@@ -146,6 +150,7 @@ public class Repository {
         Utils.writeObject(STAGE,fileMap);
     }
     public static void commit(String message){
+        checkGit();
         if(message.isEmpty()) {
             System.out.println("Please enter a commit message.");
             System.exit(0);
@@ -166,6 +171,7 @@ public class Repository {
        如果既没有被暂存,也没有被跟踪,则不做其他改动
     */
     public static void rm(String fileName) {
+        checkGit();
         File file = nameToFile(fileName);
         String path = file.getPath();
         String name = file.getName();
@@ -187,6 +193,7 @@ public class Repository {
         }
     }
     public static void log(){
+        checkGit();
         Commit commit=getCurCommit();
         while(!commit.parents.isEmpty()){
             printCommit(commit);
@@ -210,6 +217,7 @@ public class Repository {
     }
 
     public static void globalLog(){
+        checkGit();
         List<String>list=plainFilenamesIn(COMMITS);
         for (String s:list){
             File readCommit=Utils.join(COMMITS,s);
@@ -218,6 +226,7 @@ public class Repository {
     }
 
     public static void find(String message){
+        checkGit();
         List<String>list=plainFilenamesIn(COMMITS);
         int count=0;
         for (String s:list){
@@ -234,6 +243,7 @@ public class Repository {
     }
 
     public static void status(){
+        checkGit();
         System.out.println("=== Branches ===");
         listBranch();
         System.out.println("\n=== Staged Files ===");
@@ -278,7 +288,6 @@ public class Repository {
             String shaInCWD=sha1(fileName,content);
             if(!shaInCWD.equals(entry.getValue())){//如果文件在暂存区中,但和工作区中的版本不同
                 System.out.println(fileName);
-                continue;
             }
         }
         Commit commit=getCurCommit();
@@ -298,7 +307,7 @@ public class Repository {
             }
         }
     }
-    /*private static void listUntracked(){
+    private static void listUntracked(){
         List<String>fileList=plainFilenamesIn(CWD);
         HashMap<String,String>fileMap=readObject(STAGE,HashMap.class);
         Commit commit=getCurCommit();
@@ -307,10 +316,11 @@ public class Repository {
                 System.out.println(fileName);
             }
         }
-    }*/
+    }
 
     /*获取文件在头提交中的版本，并将其放入工作目录，如果文件已经存在，则覆盖其版本。文件的新版本不会被暂存。*/
     public static void checkout1(String fileName){
+        checkGit();
         File file=nameToFile(fileName);//获取当前文件的文件对象(工作目录中)
         Commit latestCom=getCurCommit();
         //如果文件没有被追踪,则报错并返回
@@ -325,6 +335,7 @@ public class Repository {
     /*获取文件在具有给定 ID 的提交中的版本，并将其放入工作目录，如果文件已经存在，则覆盖其版本。文件的新版本不会被暂存。
     命令:java gitlet.Main checkout [commit id] -- [file name]*/
     public static void checkout2(String commitID,String fileName){
+        checkGit();
         File file=nameToFile(fileName);//获取当前文件的文件对象(工作目录中)
         File readCommit=Utils.join(COMMITS,commitID);
         //判断该commit是否存在
@@ -348,6 +359,7 @@ public class Repository {
     命令:java gitlet.Main checkout [branch name]
     */
     public static void checkout3(String branchName){
+        checkGit();
         File readNewBranch=Utils.join(BRANCHES,branchName);//检查要切换到的分致是否存在
         if(!readNewBranch.exists()){
             System.out.println("No such branch exists.");
@@ -363,6 +375,7 @@ public class Repository {
         dealFiles(curCommit,newCommit);
         setBranch(branchName);
         Utils.deleteDirContent(ADD_AREA);//清空暂存区
+        Utils.writeObject(STAGE,new HashMap<>());//清空暂存表
         Utils.deleteDirContent(REMOVE_AREA);//清空暂存区
     }
     /* public static void checkUntrackedFiles(Commit curCommit,Commit newCommit){
@@ -421,6 +434,7 @@ public class Repository {
         Utils.writeObject(HEAD,branchName);
     }//把HEAD指针移动到给定分支
     public static void branch(String branchName){
+        checkGit();
         List<String>branches=Utils.plainFilenamesIn(BRANCHES);
         if(branches.contains(branchName)){
             System.out.println("A branch with that name already exists.");
@@ -430,10 +444,12 @@ public class Repository {
         Utils.writeObject(output,curCommitID);
     }
     public static void reset(String commitID){
+        checkGit();
         File readCommit=Utils.join(COMMITS,commitID);
         //判断该commit是否存在
         if(!readCommit.exists()){
             System.out.println("No commit with that id exists.");
+            return;
         }
         Commit newCommit=Utils.readObject(readCommit, Commit.class);
         Commit curCommit=getCurCommit();
@@ -442,9 +458,11 @@ public class Repository {
         File readBranch=Utils.join(BRANCHES,head);
         Utils.writeObject(readBranch,commitID);//移动当前分支的HEAD指针
         Utils.deleteDirContent(ADD_AREA);//清空暂存区
+        Utils.writeObject(STAGE,new HashMap<>());//清空暂存表
         Utils.deleteDirContent(REMOVE_AREA);//清空暂存区
     }
     public static void rmBranch(String branchName){
+        checkGit();
         File readBranch=Utils.join(BRANCHES,branchName);//检查要删除的分支是否存在
         if(!readBranch.exists()){
             System.out.println("A branch with that name does not exist.");
@@ -458,6 +476,7 @@ public class Repository {
         readBranch.delete();
     }
     public static void merge(String branchName){
+        checkGit();
         //错误情况记得写
         if(ADD_AREA.list().length!=0|| REMOVE_AREA.list().length!=0){
             System.out.println("You have uncommitted changes.");
@@ -624,7 +643,7 @@ public class Repository {
             newStr=new String(newBlob.content, StandardCharsets.UTF_8);
         }
         File file=new File(filePath);
-        String output="<<<<<<< HEAD\n"+curStr+"\n"+"=======\n"+newStr+"\n"+">>>>>>>";
+        String output="<<<<<<< HEAD\n" + curStr + "=======\n" + newStr + ">>>>>>>\n";
         writeContents(file,output.getBytes(StandardCharsets.UTF_8));//////
         add(Utils.getFileName(filePath));//////////////
         System.out.println("Encountered a merge conflict.");
