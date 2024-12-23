@@ -485,9 +485,11 @@ public class Repository {
     }
     private static Commit findSpiltPoint(Commit curCommit,Commit newCommit){
         /*先bfs记录curCom到头提交的路径,然后在bfs newCom,一边遍历一边查找spilt point*/
-        Set<Commit> path=new HashSet<>();//路径
+        Set<String> path=new HashSet<>();//路径
+        /*这个集合的泛型不能是commit对象(除非commit类重写了equals,因为不重写的话,它比较的时候会考虑内存地址,
+        但每次从本地读取出来的对象的内存地址都是不一样的!!!)*/
         Deque<Commit>deque=new ArrayDeque<>();
-        path.add(curCommit);
+        path.add(curCommit.ID);
         deque.add(curCommit);
         while(!deque.isEmpty()){
             Commit com=deque.poll();
@@ -500,8 +502,8 @@ public class Repository {
                 String parentSHA=com.parents.get(0);
                 File tar=Utils.join(COMMITS,parentSHA);
                 Commit parent=readObject(tar, Commit.class);
-                if(!path.contains(parent)){
-                    path.add(parent);
+                if(!path.contains(parent.ID)){
+                    path.add(parent.ID);
                     deque.add(parent);
                 }
 
@@ -512,12 +514,12 @@ public class Repository {
                 File tar2=Utils.join(COMMITS,parent2SHA);
                 Commit parent1=readObject(tar1, Commit.class);
                 Commit parent2=readObject(tar2, Commit.class);
-                if(!path.contains(parent1)){
-                    path.add(parent1);
+                if(!path.contains(parent1.ID)){
+                    path.add(parent1.ID);
                     deque.add(parent1);
                 }
-                if(!path.contains(parent2)){
-                    path.add(parent2);
+                if(!path.contains(parent2.ID)){
+                    path.add(parent2.ID);
                     deque.add(parent2);
                 }
             } else if (parentNum==0) {//遇到头提交了
@@ -528,7 +530,10 @@ public class Repository {
         deque.add(newCommit);
         while(!deque.isEmpty()){
             Commit com=deque.poll();
-            if(path.contains(com))return com;
+            boolean flag=path.contains(com.ID);
+            if(flag){
+                return com;
+            }
             int parentNum=com.parents.size();
             if(parentNum==1){
                 String parentSHA=com.parents.get(0);
