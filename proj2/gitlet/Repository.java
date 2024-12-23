@@ -627,6 +627,7 @@ public class Repository {
         String output="<<<<<<< HEAD\n"+curStr+"\n"+"=======\n"+newStr+"\n"+">>>>>>>";
         writeContents(file,output.getBytes(StandardCharsets.UTF_8));//////
         add(Utils.getFileName(filePath));//////////////
+        System.out.println("Encountered a merge conflict.");
     }
     private static void mergeCommit(String message,String par1,String par2){
         Commit commit=new Commit(message,par1,par2);//创建commit对象,par1是curCom,par2是newCom
