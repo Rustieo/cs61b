@@ -6,47 +6,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static gitlet.Utils.*;
-
-
-
-/** Represents a gitlet repository.
- *
- *  does at a high level.
- *
- *  @author TODO
- */
 public class Repository {
-    public static void main(String[] args) {
-        //File tar=Utils.join("D:\\gitletTest","man.txt");
-        File tar=  new File("D:\\ha");
-        List<String> list  =plainFilenamesIn(tar);
-        for (String s:list){
-            System.out.println(s);
-        }
-    }
-    /**
-     *
-     *
-     * List all instance variables of the Repository class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided two examples for you.
-     */
 
     /*Project Structure
     * /.gitlet
     *   /StageArea 暂存区
-    *       /Add_Area  存放add
-    *       /Remove_Area  存放remove
-    *       /STAGE     存放stage对象,stage对象储存"add_area的文件名-文件sha值对照表"
+    *       /Add_Area  storeAddFiles
+    *       /Remove_Area  store removed files
+    *       /STAGE     store stage obj,which store "file name in add_area-file sha value mapping"
     *   /.objects
-    *       /commits    存放commit对象,以SHA1命名
-    *       /blobs      存放文件的Blob对象,以SHA1命名,注意Blob对象中的contents数组才等于文件内容,不能直接把blob对象写入文件
+    *       /commits    store commit obj,named by its sha1
+    *       /blobs      store Blob obj ,named by sha1,注意Blob对象中的contents数组才等于文件内容,不能直接把blob对象写入文件
     *       /branches   存放分支,文件以分支名命名.内容是一个String字符串,为当前分支最新一次Commit的SHA值
     *       /HEAD       存放HEAD指针对象,只有一个文件,以HEAD命名(注意HEAD是文件不是文件夹!)
     * */
-    /** The current working directory. */
     public static final File CWD = new File(System.getProperty("user.dir"));
-    /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
     public static final File STAGE_AREA=  join(GITLET_DIR,"StageArea");
     public static final File OBJECTS=  join(GITLET_DIR,".objects");
@@ -63,8 +37,6 @@ public class Repository {
     //执行命令时没有检查git仓库是否存在
     //可能的bug:文件的"\\"与"\";
     //同一文件add两次
-    //"Incorrect operands."这个failure case没有处理
-    /* TODO: fill in the rest of this class. */
 
     public static void init() throws IOException {//还需要判断仓库是否已存在
         if(GITLET_DIR.isDirectory()&&GITLET_DIR.exists()) {
@@ -320,8 +292,6 @@ public class Repository {
             }
         }
     }
-
-    /*获取文件在头提交中的版本，并将其放入工作目录，如果文件已经存在，则覆盖其版本。文件的新版本不会被暂存。*/
     public static void checkout1(String fileName){
         checkGit();
         File file=nameToFile(fileName);//获取当前文件的文件对象(工作目录中)
@@ -335,8 +305,6 @@ public class Repository {
         Utils.writeContents(file,blob.content);//覆盖文件
     }
 
-    /*获取文件在具有给定 ID 的提交中的版本，并将其放入工作目录，如果文件已经存在，则覆盖其版本。文件的新版本不会被暂存。
-    命令:java gitlet.Main checkout [commit id] -- [file name]*/
     public static void checkout2(String commitID,String fileName){
         checkGit();
         File file=nameToFile(fileName);//获取当前文件的文件对象(工作目录中)
@@ -363,12 +331,6 @@ public class Repository {
         Blob blob=commit.getBlob(file.getPath());
         Utils.writeContents(file,blob.content);//覆盖文件
     }
-
-    /*3.获取给定分支头提交中的所有文件，并将它们放入工作目录，如果文件已经存在，则覆盖其版本。
-    此外，在执行此命令后，给定分支将被视为当前分支（HEAD）。当前分支中跟踪但在检出的分支中不存在的任何文件都将被删除。
-    除非检出的分支是当前分支，否则暂存区将被清空（见下面的失败情况）。
-    命令:java gitlet.Main checkout [branch name]
-    */
     public static void checkout3(String branchName){
         checkGit();
         File readNewBranch=Utils.join(BRANCHES,branchName);//检查要切换到的分致是否存在
@@ -389,34 +351,6 @@ public class Repository {
         Utils.writeObject(STAGE,new HashMap<>());//清空暂存表
         Utils.deleteDirContent(REMOVE_AREA);//清空暂存区
     }
-    /* public static void checkUntrackedFiles(Commit curCommit,Commit newCommit){
-        //如果有文件在当前分支未被追踪,且该文件在新分支中被追踪,则报错
-        List<String> fileList=Utils.plainFilenamesIn(CWD);
-        for(String s:fileList){
-            File file=Utils.join(CWD,s);
-            String filePath=file.getPath();
-            //String filePath= CWD.getPath()+File.separator+s;这种方法开销小点,但我怕有bug
-            if(!curCommit.blobToFile.containsKey(filePath)){
-                if(newCommit.blobToFile.containsKey(filePath)){
-                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-                    return ;
-                }
-            }
-        }
-        for(Map.Entry<String,String> entry:newCommit.blobToFile.entrySet()){
-            if(!curCommit.blobToFile.containsKey(entry.getKey())){//如果新分支有原分支没有追踪的文件
-                File notTrackedFile=Utils.join(entry.getKey());
-                if(notTrackedFile.exists()){
-                    System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
-                    return ;
-                }
-            }
-            File readBlob=Utils.join(BLOBS,entry.getValue());
-            Blob blob=Utils.readObject(readBlob, Blob.class);
-            File output=Utils.join(entry.getKey());//这里是不是会存在"\"与"\\"的问题
-            Utils.writeContents(output,blob.content);
-        }
-    }*/
     private static void dealFiles(Commit curCommit,Commit newCommit){
         checkUntrackedFiles(curCommit,newCommit);
         for(Map.Entry<String,String>entry:curCommit.blobToFile.entrySet()){

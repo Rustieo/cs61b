@@ -29,13 +29,10 @@ public class Commit implements Serializable {
     public ArrayList<String> parents;/*父结点的类型不能是Commit,不然序列化时会重复储存;
     parents[0]是first parent,即执行merge命令时当前所在的分支*/
     public String ID;
-    //public List<String>parentSHAs;
-    //public List<String> files;
     Map<String,String>blobToFile;//文件路径与相应的blob对象名,文件路径为键,blob的名字为值
     public Commit(boolean flag){//最开始的commit对象的初始化
         this.timeLabel=dateToTimeStamp(new Date(0));
         this.message="initial commit";
-        //this.parentSHAs=new ArrayList<>();
         this.blobToFile=new TreeMap<>();
         this.ID=Utils.sha1(timeLabel,message);
         this.parents=new ArrayList<>();
@@ -69,15 +66,7 @@ public class Commit implements Serializable {
         }
         Utils.deleteDirFiles(Repository.REMOVE_AREA);
     }
-    private void scanAddArea(){//如果只把前三位作为文件夹名,查找时会方便得多,后面可以再修改/////////////
-        /*List<String> blobSHAs=Utils.plainFilenamesIn(Repository.ADD_AREA);//这个是记录暂存区添加的文件的路径
-        for (int i = 0; i < blobSHAs.size(); i++) {
-            File target=Utils.join(Repository.ADD_AREA,blobSHAs.get(i));
-            Blob blob=Utils.readObject(target, Blob.class);
-            String filePath=blob.filePath;
-            blobToFile.put(filePath,blobSHAs.get(i));
-            blob.save();
-        }*/
+    private void scanAddArea(){//如果只把前三位作为文件夹名,查找时会方便得多,后面可以再修改
         HashMap<String,String>fileMap=Utils.readObject(Repository.STAGE,HashMap.class);//读取暂存表
         for(Map.Entry<String,String> entry:fileMap.entrySet()){
             String filePath=Utils.getFilePath(entry.getKey());
@@ -105,9 +94,6 @@ public class Commit implements Serializable {
         byte[]parentsByte=Utils.serialize(parents);
         this.ID=Utils.sha1(blobs,timeLabel,message,parentsByte);
     }
-    /*public boolean containsFile(String fileName){
-        return files.contains(fileName);
-    }*/
     public boolean containsFilePath(String path){
         return blobToFile.containsKey(path);
     }
@@ -124,6 +110,4 @@ public class Commit implements Serializable {
         File output=Utils.join(Repository.COMMITS,this.ID);
         Utils.writeObject(output,this);
     }
-
-    /* TODO: fill in the rest of this class. */
 }
